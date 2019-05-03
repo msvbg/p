@@ -3,7 +3,7 @@
 A simple password management tool. Passwords are stored as plain text files in a directory of your choosing. Your password directory is then easily managed using `p`.
 
 ## Install
-Clone the repository and run `stack install`.
+Clone the repository and run `stack install`. Alternatively, a macOS build is available in `dist/`.
 
 ## Basic usage
 
