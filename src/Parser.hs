@@ -14,66 +14,45 @@ data Command = Gen GenOptions | Cat CatOptions | Copy CopyOptions | Ls LsOptions
 data POptions = POptions { optCommand :: Command }
 
 commands :: Parser POptions
-commands = POptions <$> hsubparser
-    (  (command "gen" (info genOptions (progDesc "Generates a new password")))
-    <> (command "cat" (info catOptions (progDesc "Prints a password")))
-    <> (command
-           "copy"
-           (info copyOptions (progDesc "Copies a password to the clipboard"))
-       )
-    <> (command "ls" (info lsOptions (progDesc "Lists all password domains")))
-    <> (command "rm" (info rmOptions (progDesc "Removes a password domain")))
-    )
+commands = POptions <$> commandParser
   where
-    genOptions :: Parser Command
-    genOptions =
-        Gen
-            <$> (   GenOptions
-                <$> (optional
-                        (argument
-                            str
-                            (metavar "NAME" <> help
-                                "Name of domain to generate password for"
-                            )
-                        )
-                    )
-                <*> option
-                        auto
-                        (  long "length"
-                        <> metavar "LENGTH"
-                        <> showDefault
-                        <> value 20
-                        <> help "The length of the password"
-                        )
-                )
-    catOptions =
-        Cat
-            .   CatOptions
-            <$> (argument
-                    str
-                    (  metavar "NAME"
-                    <> help "Name of domain to print password for"
-                    )
-                )
-    copyOptions =
-        Copy
-            .   CopyOptions
-            <$> (argument
-                    str
-                    (  metavar "NAME"
-                    <> help "Name of domain to copy password from"
-                    )
-                )
+    commandParser = hsubparser $ mconcat
+        [ command "gen" (info genOptions (progDesc "Generates a new password"))
+        , command "cat" (info catOptions (progDesc "Prints a password"))
+        , command
+            "copy"
+            (info copyOptions (progDesc "Copies a password to the clipboard"))
+        , command "ls" (info lsOptions (progDesc "Lists all password domains"))
+        , command "rm" (info rmOptions (progDesc "Removes a password domain"))
+        ]
+
+    genOptions = Gen <$> (liftA2 GenOptions nameDesc lengthDesc)
+      where
+        nameDesc = optional $ argument str $ mconcat
+            [metavar "NAME", help "Name of domain to generate password for"]
+        lengthDesc = option auto $ mconcat
+            [ long "length"
+            , metavar "LENGTH"
+            , showDefault
+            , value 20
+            , help "The length of the password"
+            ]
+
+    catOptions = Cat . CatOptions <$> nameDesc
+      where
+        nameDesc = argument str $ mconcat
+            [metavar "NAME", help "Name of domain to print password for"]
+
+    copyOptions = Copy . CopyOptions <$> nameDesc
+      where
+        nameDesc = argument str $ mconcat
+            [metavar "NAME", help "Name of domain to copy password from"]
+
     lsOptions = pure $ Ls LsOptions
-    rmOptions =
-        Rm
-            .   RmOptions
-            <$> (argument
-                    str
-                    (  metavar "NAME"
-                    <> help "Name of domain to remove password for"
-                    )
-                )
+    rmOptions = Rm . RmOptions <$> nameDesc
+      where
+        nameDesc = argument str $ mconcat
+            [metavar "NAME", help "Name of domain to remove password for"]
 
 pParser = info
     (commands <**> helper)
