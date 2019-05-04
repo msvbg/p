@@ -47,7 +47,7 @@ gen cmdOptions = do
                          | otherwise      = encodeAlphaNumeric $ (s + 1) `mod` (10 + 26 + 26)
     generatePassword :: Bool -> Int -> IO String
     generatePassword alphaNumeric length =
-        let enc = if alphaNumeric then encodeAlphaNumeric else encodeAlphaNumeric in
+        let enc = if alphaNumeric then encodeAlphaNumeric else encode in
         getEntropy length >>= return . unpack . map enc
     writePassword path password = do
         writeFile path password
