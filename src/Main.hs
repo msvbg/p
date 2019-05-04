@@ -16,6 +16,7 @@ import           Control.Monad.Reader
 import           System.Directory
 import           System.FilePath                ( (</>) )
 import           Util
+import Data.Char (chr)
 
 -- | Retrieves a password from a file on disk
 getPassword :: (MonadReader Config m, MonadIO m) => FilePath -> m String
@@ -29,7 +30,7 @@ gen :: (MonadReader Config m, MonadIO m) => GenOptions -> m ()
 gen cmdOptions = do
     config <- ask
     liftIO $ do
-        password <- generatePassword $ genLength cmdOptions
+        password <- generatePassword (genAlphaNum cmdOptions) (genLength cmdOptions)
         -- Store the password if a name has been provided
         for_
             (genName cmdOptions)
@@ -40,9 +41,14 @@ gen cmdOptions = do
   where
     encode s | s < (126 - 33) = 33 + s
              | otherwise      = encode $ s `mod` (126 - 33)
-    generatePassword :: Int -> IO String
-    generatePassword length =
-        getEntropy length >>= return . unpack . map encode
+    encodeAlphaNumeric s | s < 10 = s + 48
+                         | s < 10 + 26 = (s - 10) + 97
+                         | s < 10 + 26 + 26 = (s - 10 - 26) + 65
+                         | otherwise      = encodeAlphaNumeric $ (s + 1) `mod` (10 + 26 + 26)
+    generatePassword :: Bool -> Int -> IO String
+    generatePassword alphaNumeric length =
+        let enc = if alphaNumeric then encodeAlphaNumeric else encodeAlphaNumeric in
+        getEntropy length >>= return . unpack . map enc
     writePassword path password = do
         writeFile path password
         putStrLn $ "Password written to " ++ path
