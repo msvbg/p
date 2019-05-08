@@ -20,7 +20,7 @@ commands = POptions <$> commandParser
     [ command "gen" (info genOptions (progDesc "Generates a new password"))
     , command "cat" (info catOptions (progDesc "Prints a password"))
     , command
-      "copy"
+      "get"
       (info copyOptions (progDesc "Copies a password to the clipboard"))
     , command "ls" (info lsOptions (progDesc "Lists all password domains"))
     , command "rm" (info rmOptions (progDesc "Removes a password domain"))
