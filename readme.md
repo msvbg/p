@@ -30,7 +30,7 @@ Available options:
 Available commands:
   gen                      Generates a new password
   cat                      Prints a password
-  copy                     Copies a password to the clipboard
+  get                      Copies a password to the clipboard
   ls                       Lists all password domains
   rm                       Removes a password domain
 ```
